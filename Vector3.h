@@ -10,6 +10,17 @@ class Vector3
 public:
     Vector3() = delete;
     Vector3(float x, float y, float z) : x_(x), y_(y), z_(z) {}
+
+    bool operator==(Vector3& other) const
+    {
+        return this->x_ == other.x_ && this->y_ == other.y_ && this->z_ == other.z_;
+    }
+
+    bool operator==(const Vector3& other) const
+    {
+        return this->x_ == other.x_ && this->y_ == other.y_ && this->z_ == other.z_;
+    }
+
     float x_ = 0.0;
     float y_ = 0.0;
     float z_ = 0.0;
