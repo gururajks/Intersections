@@ -42,8 +42,6 @@ bool LineLibrary::getPointOfIntersection(const LineSegment& l1, const LineSegmen
         return true;
     }
 
-
-
     double poi_x = (l2.getStartPoint().y_ - l1.getStartPoint().y_ +
                  l1.getSlope() * l1.getStartPoint().x_ - l2.getSlope() * l2.getStartPoint().x_) / (l1.getSlope() - l2.getSlope());
     double poi_y = l1.getSlope() * (poi_x - l1.getStartPoint().x_) + l1.getStartPoint().y_;
@@ -123,7 +121,7 @@ void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::itera
         getPointOfIntersection(line1->second, line2->second, poi);
         //only events to the right of the cross over will be added
         //only events are added once
-		if (poi.x_ > xPosition)
+		if (poi.x_ >= xPosition)
 		{
 			Event e(poi, Event::EventType::CROSS, 0);
 			e.crossOver.first = line1->first;
@@ -180,26 +178,29 @@ void LineLibrary::deleteFromSweepLine(int lineId, std::vector<std::pair<int, Lin
  * Use a line to sweep from left to right and get the POI
  * This algorithm is based on Bentley Ottomon Algorithm of sweep lines
  * http://www.itseng.org/research/papers/topics/VLSI_Physical_Design_Automation/Physical_Verification/DRC/Geometric_Intersection_Problems/1979-Bentley.pdf
+ *
+ * Event - An event is defined as either the beginning of a line or the ending of a line or an intersection of two lines
  */
 std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<LineSegment>& lines)
 {
-    std::vector<Vector3> pointOfIntersections;	
-    std::priority_queue<Event, std::vector<Event>, cp> pq;
+    std::vector<Vector3> pointOfIntersections;
+    //a min heap of a events
+    std::priority_queue<Event, std::vector<Event>, cp> events;
     std::map<int , LineSegment*> segmentMap;
     std::vector<std::pair<int, LineSegment>> sweepLine;
 
     int lineId = 0;
     for(auto& line : lines)
     {
-        pq.emplace(line.getStartPoint(), Event::EventType::BEGIN, lineId);
-        pq.emplace(line.getEndPoint(), Event::EventType::END, lineId);
+        events.emplace(line.getStartPoint(), Event::EventType::BEGIN, lineId);
+        events.emplace(line.getEndPoint(), Event::EventType::END, lineId);
         segmentMap[lineId] = &line;
         lineId++;
     }
-    while(!pq.empty())
+    while(!events.empty())
     {
-        auto topValue = pq.top();
-        pq.pop();
+        auto topValue = events.top();
+        events.pop();
         if(topValue.event_ == Event::EventType::BEGIN)
         {
             auto iter = addSegmentIntoSweepLine(topValue.lineId_, *segmentMap[topValue.lineId_], sweepLine,
@@ -210,13 +211,13 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             if(iter != sweepLine.begin() )
             {
 				auto prevIter = iter - 1;
-                checkIntersect(prevIter, iter, pq, topValue.point_.x_);
+                checkIntersect(prevIter, iter, events, topValue.point_.x_);
             }
             //check the successor for intersections
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter, pq, topValue.point_.x_);
+                checkIntersect(nextIter, iter, events, topValue.point_.x_);
             }
         }
         if(topValue.event_ == Event::EventType::END)
@@ -231,7 +232,7 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter,  pq, topValue.point_.x_);
+                checkIntersect(nextIter, iter,  events, topValue.point_.x_);
             }
             //delete the segment from the segment map
             deleteFromSweepLine(topValue.lineId_, sweepLine);
@@ -239,7 +240,12 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
 		//cross over event
         if(topValue.event_ == Event::EventType::CROSS)
         {
-            pointOfIntersections.push_back(topValue.point_);
+            //only add the point of intersection once as you can have multiple lines converging on the same point
+            if((!pointOfIntersections.empty() && pointOfIntersections.back() != topValue.point_) ||
+                pointOfIntersections.empty())
+                pointOfIntersections.push_back(topValue.point_);
+            else
+                continue;
 
             int firstLine = topValue.crossOver.first;
             int secondLine = topValue.crossOver.second;
@@ -255,9 +261,9 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             //swap the crossOver in the sweep line
 			//check if the swapped neigbors have any further crossovers 
 			if(firstLineIndex > 0)
-				checkIntersect(sweepLine.begin() + firstLineIndex - 1, sweepLine.begin() + firstLineIndex, pq, topValue.point_.x_);
+				checkIntersect(sweepLine.begin() + firstLineIndex - 1, sweepLine.begin() + firstLineIndex, events, topValue.point_.x_);
 			if (secondLineIndex < sweepLine.size() - 1)
-				checkIntersect(sweepLine.begin() + secondLineIndex + 1, sweepLine.begin() + secondLineIndex, pq, topValue.point_.x_);
+				checkIntersect(sweepLine.begin() + secondLineIndex + 1, sweepLine.begin() + secondLineIndex, events, topValue.point_.x_);
         }
     }
 

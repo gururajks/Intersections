@@ -12,7 +12,11 @@ int main() {
 
     std::vector<LineSegment> lines = {
             LineSegment(Vector3(1.0, 1.0, 0.0), Vector3(4.0, 4.0, 0.0)),
-            LineSegment(Vector3(2.0, 1.0, 0.0), Vector3(2.0, 4.0, 0.0))};
+            LineSegment(Vector3(2.0, 4.0, 0.0), Vector3(6.0, 1.0, 0.0)),
+            LineSegment(Vector3(5.0, 4.0, 0.0), Vector3(13.5,2.7, 0.0)),
+            LineSegment(Vector3(5.0, 5.0, 0.0), Vector3(9.0, 1.0, 0.0)),
+            LineSegment(Vector3(7.0, 4.7, 0.0), Vector3(12.5, 1.5, 0.0)),
+            LineSegment(Vector3(10.0, 1.5, 0.0), Vector3(12.5, 5.0, 0.0))};
 
     /*
      * ,
