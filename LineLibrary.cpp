@@ -63,9 +63,9 @@ bool LineLibrary::onSegment(Vector3 a, Vector3 b, Vector3 c)
 }
 
 
-int LineLibrary::orientation(Vector3 a, Vector3 b, Vector3 c)
+float LineLibrary::orientation(Vector3 a, Vector3 b, Vector3 c)
 {
-    int val = (b.y_ - a.y_) * (c.x_ - b.x_) -
+    float val = (b.y_ - a.y_) * (c.x_ - b.x_) -
               (b.x_ - a.x_) * (c.y_ - b.y_);
 
     if (val == 0) return 0;  // colinear

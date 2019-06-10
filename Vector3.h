@@ -8,7 +8,6 @@
 class Vector3
 {
 public:
-    //TODO: fix this
     Vector3() = delete;
     Vector3(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 

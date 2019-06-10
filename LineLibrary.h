@@ -34,7 +34,7 @@ public:
     }
 };
 
-//This is a static Helper library that does all the mathematical calculations
+//This is a  Helper library that does all the mathematical calculations
 //It is a static library as there is no dependency and best to keep it loosely coupled
 class LineLibrary {
 public:
@@ -43,7 +43,7 @@ public:
     //check if two lines are parallel
     bool isParallel(const LineSegment& l1, const LineSegment& l2);
     bool doIntersect(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2);
-    int orientation(Vector3 p, Vector3 q, Vector3 r);
+    float orientation(Vector3 a, Vector3 b, Vector3 c);
     bool onSegment(Vector3 p, Vector3 q, Vector3 r);
     //given a list of line segments return a list of point of intersections
     std::vector<Vector3> getPointsOfIntersection(const std::vector<LineSegment>& lines);
