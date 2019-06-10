@@ -35,7 +35,6 @@ public:
 };
 
 //This is a  Helper library that does all the mathematical calculations
-//It is a static library as there is no dependency and best to keep it loosely coupled
 class LineLibrary {
 public:
     //given two lines return a boolean if they intersect and accordingly return a point
