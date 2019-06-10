@@ -18,11 +18,17 @@ int main() {
             LineSegment(Vector3(7.0, 4.7, 0.0), Vector3(12.5, 1.5, 0.0)),
             LineSegment(Vector3(10.0, 1.5, 0.0), Vector3(12.5, 5.0, 0.0))};
 
-    auto pointOfIntersections = LineLibrary::getPointsOfIntersection(lines);
-
+    LineLibrary l;
+    /*auto pointOfIntersections = l.getPointsOfIntersection(lines);
     std::for_each(pointOfIntersections.begin(), pointOfIntersections.end(), [](const Vector3& poi){
        std::cout<<"x:"<<poi.x_<<"   y:"<<poi.y_<<"   z:"<<poi.z_<<std::endl;
-    });
+    });*/
+
+	std::cout << "-----"<<std::endl;
+    auto points = l.getEfficientPointsOfIntersection(lines);
+	std::for_each(points.begin(), points.end(), [](const Vector3& poi) {
+		std::cout << "x:" << poi.x_ << "   y:" << poi.y_ << "   z:" << poi.z_ << std::endl;
+	});
 
     return 0;
 }
