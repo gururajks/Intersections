@@ -19,18 +19,19 @@ int main() {
             LineSegment(Vector3(10.0, 1.5, 0.0), Vector3(12.5, 5.0, 0.0))};
 
     LineLibrary l;
-    //This is an efficient algorithm that goes in O(n2)
+    //This is an inefficient algorithm that goes in O(n2)
     //this is to compare and test the algorithm
     /*auto pointOfIntersections = l.getPointsOfIntersection(lines);
     std::for_each(pointOfIntersections.begin(), pointOfIntersections.end(), [](const Vector3& poi){
        std::cout<<"x:"<<poi.x_<<"   y:"<<poi.y_<<"   z:"<<poi.z_<<std::endl;
     });*/
 
-	std::cout << "-----"<<std::endl;
+    std::cout << "-----"<<std::endl;
+    //This is an efficient algorithm that goes in O(nlogn)
     auto points = l.getEfficientPointsOfIntersection(lines);
-	std::for_each(points.begin(), points.end(), [](const Vector3& poi) {
-		std::cout << "x:" << poi.x_ << "   y:" << poi.y_ << "   z:" << poi.z_ << std::endl;
-	});
+    std::for_each(points.begin(), points.end(), [](const Vector3& poi) {
+        std::cout << "x:" << poi.x_ << "   y:" << poi.y_ << "   z:" << poi.z_ << std::endl;
+    });
 
     return 0;
 }
