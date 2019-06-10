@@ -2,7 +2,8 @@
 // Created by Gururaj Sridhar on 2019-06-07.
 //
 #pragma once
-#include"Vector3.h"
+
+#include "Vector3.h"
 
 class Vector3;
 class LineSegment
@@ -16,22 +17,10 @@ public:
     inline double getSlope() const {return slope_;}
     inline double getIntercept() const { return intercept_; }
 
-    LineSegment(LineSegment& other)
-    {
-        startPoint_ = Vector3(other.getStartPoint().x_, other.getStartPoint().y_, other.getStartPoint().z_);
-        slope_ = other.getSlope();
-        endPoint_ = Vector3(other.getEndPoint().x_, other.getEndPoint().y_, other.getEndPoint().z_);
-        intercept_ = other.getIntercept();
-    }
-
-    LineSegment(const LineSegment& other)
-    {
-        startPoint_ = Vector3(other.getStartPoint().x_, other.getStartPoint().y_, other.getStartPoint().z_);
-        slope_ = other.getSlope();
-        endPoint_ = Vector3(other.getEndPoint().x_, other.getEndPoint().y_, other.getEndPoint().z_);
-        intercept_ = other.getIntercept();
-    }
-
+    LineSegment& operator=(LineSegment& other);
+    LineSegment& operator=(const LineSegment& other);
+    LineSegment(LineSegment& other);
+    LineSegment(const LineSegment& other);
 
 private:
     double slope_;

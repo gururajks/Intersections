@@ -18,3 +18,37 @@ LineSegment::LineSegment(const Vector3& pt1, const Vector3& pt2) : startPoint_(p
         slope_ = (endPoint_.y_ - startPoint_.y_) / (endPoint_.x_ -  startPoint_.x_);
     intercept_ = -(slope_ * startPoint_.x_) + startPoint_.y_;
 }
+
+LineSegment& LineSegment::operator=(LineSegment& other)
+{
+    if(this == &other)
+        return *this;
+    slope_ = other.getSlope();
+    intercept_ = other.getIntercept();
+    startPoint_ = other.getStartPoint();
+    endPoint_ = other.getEndPoint();
+    return *this;
+}
+
+LineSegment& LineSegment::operator=(const LineSegment& other)
+{
+    if(this == &other)
+        return *this;
+    slope_ = other.getSlope();
+    intercept_ = other.getIntercept();
+    startPoint_ = other.getStartPoint();
+    endPoint_ = other.getEndPoint();
+    return *this;
+}
+
+LineSegment::LineSegment(LineSegment& other) : LineSegment(other.getStartPoint(), other.getEndPoint())
+{
+    slope_ = other.getSlope();
+    intercept_ = other.getIntercept();
+}
+
+LineSegment::LineSegment(const LineSegment& other) : LineSegment(other.getStartPoint(), other.getEndPoint())
+{
+    slope_ = other.getSlope();
+    intercept_ = other.getIntercept();
+}

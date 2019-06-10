@@ -19,6 +19,8 @@ int main() {
             LineSegment(Vector3(10.0, 1.5, 0.0), Vector3(12.5, 5.0, 0.0))};
 
     LineLibrary l;
+    //This is an efficient algorithm that goes in O(n2)
+    //this is to compare and test the algorithm
     /*auto pointOfIntersections = l.getPointsOfIntersection(lines);
     std::for_each(pointOfIntersections.begin(), pointOfIntersections.end(), [](const Vector3& poi){
        std::cout<<"x:"<<poi.x_<<"   y:"<<poi.y_<<"   z:"<<poi.z_<<std::endl;
@@ -39,7 +41,7 @@ int main() {
 #include "catch.hpp"
 
 
-TEST_CASE("Get Slope", "[getSlop()]")
+TEST_CASE("Get Slope", "[getSlope()]")
 {
     LineSegment l(Vector3(5.0, 5.0, 0.0), Vector3(9.0, 9.0, 0.0));
     REQUIRE(l.getSlope() == 1);

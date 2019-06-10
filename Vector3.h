@@ -9,20 +9,15 @@ class Vector3
 {
 public:
     //TODO: fix this
-    Vector3() {};
+    Vector3() {}
     Vector3(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 
-    Vector3(Vector3& other)
+    Vector3(Vector3& other) : x_(other.x_) , y_(other.y_), z_(other.z_)
     {
-        x_ = other.x_;
-        y_ = other.y_;
-        z_ = other.z_;
     }
-    Vector3(const Vector3& other)
+
+    Vector3(const Vector3& other)  : x_(other.x_) , y_(other.y_), z_(other.z_)
     {
-        x_ = other.x_;
-        y_ = other.y_;
-        z_ = other.z_;
     }
 
     bool operator==(Vector3& other) const
