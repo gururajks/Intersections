@@ -10,11 +10,18 @@
 #include<map>
 #include<list>
 #include<iostream>
+#include<limits>
+#include<cmath>
 
 
 bool LineLibrary::isParallel(const LineSegment &l1, const LineSegment &l2)
 {
     return l1.getSlope() == l2.getSlope();
+}
+
+bool LineLibrary::isVertical(const LineSegment &l) const
+{
+    return abs(l.getSlope() - std::numeric_limits<double>::max()) <= 0.1;
 }
 
 
@@ -23,7 +30,18 @@ bool LineLibrary::isParallel(const LineSegment &l1, const LineSegment &l2)
  */
 bool LineLibrary::getPointOfIntersection(const LineSegment& l1, const LineSegment& l2, Vector3& pointOfIntersection)
 {
-    if(isParallel(l1, l2) || !doIntersect(l1.getStartPoint(), l1.getEndPoint(), l2.getStartPoint(), l2.getEndPoint())) return false;
+    if(isParallel(l1, l2) || !isIntersecting(l1.getStartPoint(), l1.getEndPoint(), l2.getStartPoint(), l2.getEndPoint())) return false;
+
+    if(isVertical(l1) || isVertical(l2))
+    {
+        const LineSegment& otherLine = isVertical(l1) ? l2 : l1;
+        const LineSegment& infLine = isVertical(l1) ? l1 : l2;
+        float y_poi = otherLine.getSlope() * infLine.getStartPoint().x_ + otherLine.getIntercept();
+        pointOfIntersection.x_ = infLine.getStartPoint().x_;
+        pointOfIntersection.y_ = y_poi;
+        return true;
+    }
+
     double poi_x = (l2.getStartPoint().y_ - l1.getStartPoint().y_ +
                  l1.getSlope() * l1.getStartPoint().x_ - l2.getSlope() * l2.getStartPoint().x_) / (l1.getSlope() - l2.getSlope());
     double poi_y = l1.getSlope() * (poi_x - l1.getStartPoint().x_) + l1.getStartPoint().y_;
@@ -33,40 +51,17 @@ bool LineLibrary::getPointOfIntersection(const LineSegment& l1, const LineSegmen
 }
 
 
-/*
-* O(n2) algorithm
-*/
-std::vector<Vector3> LineLibrary::getPointsOfIntersection(const std::vector<LineSegment>& lines)
-{
-    std::vector<Vector3> pointOfIntersections;
-    for(int i = 0 ; i < lines.size(); i++)
-    {
-        for(int j = i + 1; j < lines.size(); j++)
-        {
-            Vector3 pointOfIntersection(0.0f, 0.0f, 0.0f);
-            if(doIntersect(lines[i].getStartPoint(), lines[i].getEndPoint(),
-                    lines[j].getStartPoint(), lines[j].getEndPoint()))
-            {
-                getPointOfIntersection(lines[i], lines[j], pointOfIntersection);
-                pointOfIntersections.push_back(pointOfIntersection);
-            }
-        }
-    }
-    return pointOfIntersections;
-}
-
 //check if they are co-linear
-bool LineLibrary::onSegment(Vector3 a, Vector3 b, Vector3 c)
+bool LineLibrary::isColinear(Vector3 a, Vector3 b, Vector3 c)
 {
     return (b.x_ <= std::max(a.x_, c.x_) && b.x_ >= std::min(a.x_, c.x_) &&
         b.y_ <= std::max(a.y_, c.y_) && b.y_ >= std::min(a.y_, c.y_));
 }
 
 
-float LineLibrary::orientation(Vector3 a, Vector3 b, Vector3 c)
+float LineLibrary::direction(Vector3 a, Vector3 b, Vector3 c)
 {
-    float val = (b.y_ - a.y_) * (c.x_ - b.x_) -
-              (b.x_ - a.x_) * (c.y_ - b.y_);
+    float val = (b.y_ - a.y_) * (c.x_ - b.x_) - (b.x_ - a.x_) * (c.y_ - b.y_);
 
     if (val == 0) return 0;  // colinear
 
@@ -75,43 +70,36 @@ float LineLibrary::orientation(Vector3 a, Vector3 b, Vector3 c)
 
 // The main function that returns true if line segment 'p1q1'
 // and 'p2q2' intersect.
-bool LineLibrary::doIntersect(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
+bool LineLibrary::isIntersecting(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
 {
     // Find the four orientations needed for general and
     // special cases
-    int o1 = orientation(p1, q1, p2);
-    int o2 = orientation(p1, q1, q2);
-    int o3 = orientation(p2, q2, p1);
-    int o4 = orientation(p2, q2, q1);
+    int d1 = direction(p1, q1, p2);
+    int d2 = direction(p1, q1, q2);
+    int d3 = direction(p2, q2, p1);
+    int d4 = direction(p2, q2, q1);
 
     // General case
-    if (o1 != o2 && o3 != o4)
+    if (d1 != d2 && d3 != d4)
         return true;
 
-    // Special Cases
-    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
-    if (o1 == 0 && onSegment(p1, p2, q1)) return true;
-
-    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
-    if (o2 == 0 && onSegment(p1, q2, q1)) return true;
-
-    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
-    if (o3 == 0 && onSegment(p2, p1, q2)) return true;
-
-    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
-    return (o4 == 0 && onSegment(p2, q1, q2));
+    if (d1 == 0 && isColinear(p1, p2, q1)) return true;
+    if (d2 == 0 && isColinear(p1, q2, q1)) return true;
+    if (d3 == 0 && isColinear(p2, p1, q2)) return true;
+    return (d4 == 0 && isColinear(p2, q1, q2));
 }
 
 
 void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::iterator line1, std::vector<std::pair<int, LineSegment>>::iterator line2, std::priority_queue<Event, std::vector<Event>, cp>& pq, float xPosition)
 {
-    if(doIntersect(line1->second.getStartPoint(), line1->second.getEndPoint(), line2->second.getStartPoint(), line2->second.getEndPoint()))
+    if(isIntersecting(line1->second.getStartPoint(), line1->second.getEndPoint(), line2->second.getStartPoint(),
+                      line2->second.getEndPoint()))
     {
         Vector3 poi(0.0, 0.0, 0.0);
         getPointOfIntersection(line1->second, line2->second, poi);
         //only events to the right of the cross over will be added
         //only events are added once
-		if (poi.x_ > xPosition)
+		if (poi.x_ >= xPosition)
 		{
 			Event e(poi, Event::EventType::CROSS, 0);
 			e.crossOver.first = line1->first;
@@ -168,26 +156,29 @@ void LineLibrary::deleteFromSweepLine(int lineId, std::vector<std::pair<int, Lin
  * Use a line to sweep from left to right and get the POI
  * This algorithm is based on Bentley Ottomon Algorithm of sweep lines
  * http://www.itseng.org/research/papers/topics/VLSI_Physical_Design_Automation/Physical_Verification/DRC/Geometric_Intersection_Problems/1979-Bentley.pdf
+ *
+ * Event - An event is defined as either the beginning of a line or the ending of a line or an intersection of two lines
  */
 std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<LineSegment>& lines)
 {
-    std::vector<Vector3> pointOfIntersections;	
-    std::priority_queue<Event, std::vector<Event>, cp> pq;
+    std::vector<Vector3> pointOfIntersections;
+    //a min heap of a events
+    std::priority_queue<Event, std::vector<Event>, cp> events;
     std::map<int , LineSegment*> segmentMap;
     std::vector<std::pair<int, LineSegment>> sweepLine;
 
     int lineId = 0;
     for(auto& line : lines)
     {
-        pq.emplace(line.getStartPoint(), Event::EventType::BEGIN, lineId);
-        pq.emplace(line.getEndPoint(), Event::EventType::END, lineId);
+        events.emplace(line.getStartPoint(), Event::EventType::BEGIN, lineId);
+        events.emplace(line.getEndPoint(), Event::EventType::END, lineId);
         segmentMap[lineId] = &line;
         lineId++;
     }
-    while(!pq.empty())
+    while(!events.empty())
     {
-        auto topValue = pq.top();
-        pq.pop();
+        auto topValue = events.top();
+        events.pop();
         if(topValue.event_ == Event::EventType::BEGIN)
         {
             auto iter = addSegmentIntoSweepLine(topValue.lineId_, *segmentMap[topValue.lineId_], sweepLine,
@@ -198,13 +189,13 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             if(iter != sweepLine.begin() )
             {
 				auto prevIter = iter - 1;
-                checkIntersect(prevIter, iter, pq, topValue.point_.x_);
+                checkIntersect(prevIter, iter, events, topValue.point_.x_);
             }
             //check the successor for intersections
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter, pq, topValue.point_.x_);
+                checkIntersect(nextIter, iter, events, topValue.point_.x_);
             }
         }
         if(topValue.event_ == Event::EventType::END)
@@ -219,7 +210,7 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter,  pq, topValue.point_.x_);
+                checkIntersect(nextIter, iter,  events, topValue.point_.x_);
             }
             //delete the segment from the segment map
             deleteFromSweepLine(topValue.lineId_, sweepLine);
@@ -227,7 +218,12 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
 		//cross over event
         if(topValue.event_ == Event::EventType::CROSS)
         {
-            pointOfIntersections.push_back(topValue.point_);
+            //only add the point of intersection once as you can have multiple lines converging on the same point
+            if((!pointOfIntersections.empty() && pointOfIntersections.back() != topValue.point_) ||
+                pointOfIntersections.empty())
+                pointOfIntersections.push_back(topValue.point_);
+            else
+                continue;
 
             int firstLine = topValue.crossOver.first;
             int secondLine = topValue.crossOver.second;
@@ -243,9 +239,9 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
             //swap the crossOver in the sweep line
 			//check if the swapped neigbors have any further crossovers 
 			if(firstLineIndex > 0)
-				checkIntersect(sweepLine.begin() + firstLineIndex - 1, sweepLine.begin() + firstLineIndex, pq, topValue.point_.x_);
+				checkIntersect(sweepLine.begin() + firstLineIndex - 1, sweepLine.begin() + firstLineIndex, events, topValue.point_.x_);
 			if (secondLineIndex < sweepLine.size() - 1)
-				checkIntersect(sweepLine.begin() + secondLineIndex + 1, sweepLine.begin() + secondLineIndex, pq, topValue.point_.x_);
+				checkIntersect(sweepLine.begin() + secondLineIndex + 1, sweepLine.begin() + secondLineIndex, events, topValue.point_.x_);
         }
     }
 
