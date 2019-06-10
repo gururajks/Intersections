@@ -53,7 +53,7 @@ public:
 
 
     void deleteFromSweepLine(int lineId, std::vector<std::pair<int, LineSegment>> &sweepLine);
-    std::vector<std::pair<int, LineSegment>>::iterator addSegmentIntoSweepLine(int lineId, LineSegment &line,
+    std::vector<std::pair<int, LineSegment>>::iterator addSegmentIntoSweepLine(int lineId, const LineSegment &line,
                                                                                std::vector<std::pair<int, LineSegment>> &sweepLine,
                                                                                float xPosition);
 

@@ -123,7 +123,7 @@ void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::itera
 }
 
 //
-std::vector<std::pair<int, LineSegment>>::iterator LineLibrary::addSegmentIntoSweepLine(int lineId, LineSegment &line,
+std::vector<std::pair<int, LineSegment>>::iterator LineLibrary::addSegmentIntoSweepLine(int lineId, const LineSegment &line,
                                                                                         std::vector<std::pair<int, LineSegment>> &sweepLine,
                                                                                         float xPosition)
 {
@@ -173,7 +173,7 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
 {
     std::vector<Vector3> pointOfIntersections;	
     std::priority_queue<Event, std::vector<Event>, cp> pq;
-    std::map<int , LineSegment> segmentMap;
+    std::map<int , LineSegment*> segmentMap;
     std::vector<std::pair<int, LineSegment>> sweepLine;
 
     int lineId = 0;
@@ -181,7 +181,7 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
     {
         pq.emplace(line.getStartPoint(), Event::EventType::BEGIN, lineId);
         pq.emplace(line.getEndPoint(), Event::EventType::END, lineId);
-        segmentMap[lineId] = line;
+        segmentMap[lineId] = &line;
         lineId++;
     }
     while(!pq.empty())
@@ -190,7 +190,7 @@ std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<L
         pq.pop();
         if(topValue.event_ == Event::EventType::BEGIN)
         {
-            auto iter = addSegmentIntoSweepLine(topValue.lineId_, segmentMap[topValue.lineId_], sweepLine,
+            auto iter = addSegmentIntoSweepLine(topValue.lineId_, *segmentMap[topValue.lineId_], sweepLine,
                                                 topValue.point_.x_);
 
             //check the predecessor for the intersection

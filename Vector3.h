@@ -9,7 +9,7 @@ class Vector3
 {
 public:
     //TODO: fix this
-    Vector3() {}
+    Vector3() = delete;
     Vector3(float x, float y, float z) : x_(x), y_(y), z_(z) {}
 
     Vector3(Vector3& other) : x_(other.x_) , y_(other.y_), z_(other.z_)
@@ -18,6 +18,26 @@ public:
 
     Vector3(const Vector3& other)  : x_(other.x_) , y_(other.y_), z_(other.z_)
     {
+    }
+
+    Vector3& operator=(Vector3& other)
+    {
+        if(this == &other)
+            return *this;
+        this->x_ = other.x_;
+        this->y_ = other.y_;
+        this->z_ = other.z_;
+        return *this;
+    }
+
+    Vector3& operator=(const Vector3& other)
+    {
+        if(this == &other)
+            return *this;
+        this->x_ = other.x_;
+        this->y_ = other.y_;
+        this->z_ = other.z_;
+        return *this;
     }
 
     bool operator==(Vector3& other) const

@@ -9,7 +9,7 @@ class Vector3;
 class LineSegment
 {
 public:
-    LineSegment() {}
+    LineSegment() = delete;
     ~LineSegment() = default;
     LineSegment(const Vector3& pt1, const Vector3& pt2);
     inline Vector3 getStartPoint() const {return startPoint_;}
@@ -21,6 +21,7 @@ public:
     LineSegment& operator=(const LineSegment& other);
     LineSegment(LineSegment& other);
     LineSegment(const LineSegment& other);
+
 
 private:
     double slope_;

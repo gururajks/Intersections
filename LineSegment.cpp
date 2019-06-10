@@ -19,6 +19,7 @@ LineSegment::LineSegment(const Vector3& pt1, const Vector3& pt2) : startPoint_(p
     intercept_ = -(slope_ * startPoint_.x_) + startPoint_.y_;
 }
 
+
 LineSegment& LineSegment::operator=(LineSegment& other)
 {
     if(this == &other)
