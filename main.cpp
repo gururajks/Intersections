@@ -24,9 +24,11 @@ int main() {
        std::cout<<"x:"<<poi.x_<<"   y:"<<poi.y_<<"   z:"<<poi.z_<<std::endl;
     });*/
 
-
-    auto points = l.getEffPointsOfIntersection(lines);
-
+	std::cout << "-----"<<std::endl;
+    auto points = l.getEfficientPointsOfIntersection(lines);
+	std::for_each(points.begin(), points.end(), [](const Vector3& poi) {
+		std::cout << "x:" << poi.x_ << "   y:" << poi.y_ << "   z:" << poi.z_ << std::endl;
+	});
 
     return 0;
 }

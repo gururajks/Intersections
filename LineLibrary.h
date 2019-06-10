@@ -62,11 +62,11 @@ public:
     bool isParallel(const LineSegment& l1, const LineSegment& l2);
     //given a list of line segments return a list of point of intersections
     std::vector<Vector3> getPointsOfIntersection(const std::vector<LineSegment>& lines);
-    std::vector<Vector3> getEffPointsOfIntersection(std::vector<LineSegment>& lines);
+    std::vector<Vector3> getEfficientPointsOfIntersection(std::vector<LineSegment>& lines);
     bool onSegment(Vector3 p, Vector3 q, Vector3 r);
     void deleteFromSegmentList(int lineId, std::vector<std::pair<int, LineSegment>>& sweepLine);
     std::vector<std::pair<int, LineSegment>>::iterator addIntoSegmentList(int lineId, LineSegment& line, std::vector<std::pair<int, LineSegment>>& sweepLine, float xPosition);
-    void checkIntersect(std::vector<std::pair<int, LineSegment>>::iterator line1, std::vector<std::pair<int, LineSegment>>::iterator line2, std::priority_queue<Event, std::vector<Event>, cp>& pq );
+    void checkIntersect(std::vector<std::pair<int, LineSegment>>::iterator line1, std::vector<std::pair<int, LineSegment>>::iterator line2, std::priority_queue<Event, std::vector<Event>, cp>& pq, float xPosition );
     bool doIntersect(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2);
     int orientation(Vector3 p, Vector3 q, Vector3 r);
 

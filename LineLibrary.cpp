@@ -252,6 +252,10 @@ bool LineLibrary::getPointOfIntersection(const LineSegment& l1, const LineSegmen
     return true;
 }
 
+
+/*
+* O(n2) algorithm
+*/
 std::vector<Vector3> LineLibrary::getPointsOfIntersection(const std::vector<LineSegment>& lines)
 {
     std::vector<Vector3> pointOfIntersections;
@@ -276,25 +280,18 @@ std::vector<Vector3> LineLibrary::getPointsOfIntersection(const std::vector<Line
 
 
 
-// Given three colinear points p, q, r, the function checks if
-// point q lies on line segment 'pr'
-bool LineLibrary::onSegment(Vector3 p, Vector3 q, Vector3 r)
+//check if they are co-linear
+bool LineLibrary::onSegment(Vector3 a, Vector3 b, Vector3 c)
 {
-    return (q.x_ <= std::max(p.x_, r.x_) && q.x_ >= std::min(p.x_, r.x_) &&
-        q.y_ <= std::max(p.y_, r.y_) && q.y_ >= std::min(p.y_, r.y_));
+    return (b.x_ <= std::max(a.x_, c.x_) && b.x_ >= std::min(a.x_, c.x_) &&
+        b.y_ <= std::max(a.y_, c.y_) && b.y_ >= std::min(a.y_, c.y_));
 }
 
-// To find orientation of ordered triplet (p, q, r).
-// The function returns following values
-// 0 --> p, q and r are colinear
-// 1 --> Clockwise
-// 2 --> Counterclockwise
-int LineLibrary::orientation(Vector3 p, Vector3 q, Vector3 r)
+
+int LineLibrary::orientation(Vector3 a, Vector3 b, Vector3 c)
 {
-    // See https://www.geeksforgeeks.org/orientation-3-ordered-points/
-    // for details of below formula.
-    int val = (q.y_ - p.y_) * (r.x_ - q.x_) -
-              (q.x_ - p.x_) * (r.y_ - q.y_);
+    int val = (b.y_ - a.y_) * (c.x_ - b.x_) -
+              (b.x_ - a.x_) * (c.y_ - b.y_);
 
     if (val == 0) return 0;  // colinear
 
@@ -331,18 +328,19 @@ bool LineLibrary::doIntersect(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
 }
 
 
-
-
-void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::iterator line1, std::vector<std::pair<int, LineSegment>>::iterator line2, std::priority_queue<Event, std::vector<Event>, cp>& pq )
+void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::iterator line1, std::vector<std::pair<int, LineSegment>>::iterator line2, std::priority_queue<Event, std::vector<Event>, cp>& pq, float xPosition)
 {
     if(doIntersect(line1->second.getStartPoint(), line1->second.getEndPoint(), line2->second.getStartPoint(), line2->second.getEndPoint()))
     {
         Vector3 poi(0.0, 0.0, 0.0);
-        getPointOfIntersection(line1->second, line2->second, poi);
-        Event e(poi, Event::EventType::CROSS, 0);
-        e.crossOver.first = line1->first;
-        e.crossOver.second = line2->first;
-        pq.push(e);
+        getPointOfIntersection(line1->second, line2->second, poi);		
+		if (poi.x_ > xPosition)
+		{
+			Event e(poi, Event::EventType::CROSS, 0);
+			e.crossOver.first = line1->first;
+			e.crossOver.second = line2->first;
+			pq.push(e);
+		}        
     }
 
 }
@@ -350,18 +348,29 @@ void LineLibrary::checkIntersect(std::vector<std::pair<int, LineSegment>>::itera
 
 std::vector<std::pair<int, LineSegment>>::iterator LineLibrary::addIntoSegmentList(int lineId, LineSegment& line, std::vector<std::pair<int, LineSegment>>& sweepLine, float xPosition)
 {
-    std::vector<std::pair<int, LineSegment>>::iterator insertedIter = sweepLine.end();
+	int cy = line.getSlope() * xPosition + line.getIntercept();
+    std::vector<std::pair<int, LineSegment>>::iterator insertedIter = sweepLine.end();	
+	bool inserted = false;
     for(auto iter = sweepLine.begin(); iter != sweepLine.end(); iter++)
     {
         auto sweepPoint = iter->second;
-        int y = sweepPoint.getSlope() * xPosition + sweepPoint.getIntercept();
-        int cy = line.getSlope() * xPosition + line.getIntercept();
+		//calculate the slope at that xposition and get the y so that it gets inserted in the right position
+        int y = sweepPoint.getSlope() * xPosition + sweepPoint.getIntercept();        
         if(cy < y)
         {
-            sweepLine.insert(iter, std::make_pair(lineId, line));
-            insertedIter = iter;
+			insertedIter = sweepLine.insert(iter, std::make_pair(lineId, line));
+			inserted = true;
+			break;
         }
     }
+	if (sweepLine.empty())
+	{
+		insertedIter = sweepLine.insert(sweepLine.begin(), std::make_pair(lineId, line));
+	}
+	else if (!inserted)
+	{
+		insertedIter = sweepLine.insert(sweepLine.begin() + sweepLine.size(), std::make_pair(lineId, line));
+	}
     return insertedIter;
 }
 
@@ -378,17 +387,15 @@ void LineLibrary::deleteFromSegmentList(int lineId, std::vector<std::pair<int, L
 
 /*
  * Use a line to sweep from left to right and get the POI
+ * This algorithm is based on Bentley Ottomon Algorithm of sweep lines
+ * http://www.itseng.org/research/papers/topics/VLSI_Physical_Design_Automation/Physical_Verification/DRC/Geometric_Intersection_Problems/1979-Bentley.pdf
  */
-std::vector<Vector3> LineLibrary::getEffPointsOfIntersection(std::vector<LineSegment>& lines)
+std::vector<Vector3> LineLibrary::getEfficientPointsOfIntersection(std::vector<LineSegment>& lines)
 {
-    std::vector<Vector3> pointOfIntersections;
-    std::sort(lines.begin(), lines.end(), [](LineSegment& line1, LineSegment& line2) {
-        return line1.getStartPoint().x_ < line2.getStartPoint().x_;
-    });
+    std::vector<Vector3> pointOfIntersections;	
     std::priority_queue<Event, std::vector<Event>, cp> pq;
     std::map<int , LineSegment> segmentMap;
     std::vector<std::pair<int, LineSegment>> sweepLine;
-    std::cout<<"Reached1"<<std::endl;
 
     int lineId = 0;
     for(auto& line : lines)
@@ -400,35 +407,28 @@ std::vector<Vector3> LineLibrary::getEffPointsOfIntersection(std::vector<LineSeg
     }
     while(!pq.empty())
     {
-        std::cout<<"Reached2"<<std::endl;
         auto topValue = pq.top();
         pq.pop();
-        std::cout<<"Reached2.5"<<std::endl;
-        std::cout<<topValue.event_<<std::endl;
         if(topValue.event_ == Event::EventType::BEGIN)
         {
-            std::cout<<"Reached3"<<std::endl;
             auto iter = addIntoSegmentList(topValue.lineId_, segmentMap[topValue.lineId_], sweepLine, topValue.point_.x_);
-            std::cout<<"Reached4"<<std::endl;
 
             //check the predecessor for the intersection
-            auto prevIter = iter - 1;
+            
             if(iter != sweepLine.begin() )
             {
-                checkIntersect(prevIter, iter, pq);
+				auto prevIter = iter - 1;
+                checkIntersect(prevIter, iter, pq, topValue.point_.x_);
             }
-            std::cout<<"Reached5"<<std::endl;
             //check the successor for intersections
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter, pq);
+                checkIntersect(nextIter, iter, pq, topValue.point_.x_);
             }
-            std::cout<<"Reached6"<<std::endl;
         }
         if(topValue.event_ == Event::EventType::END)
         {
-            std::cout<<"Reached7"<<std::endl;
             //check the intersection of pred and suc of this line
             //check the successor for intersections
             int lineId = topValue.lineId_;
@@ -439,25 +439,33 @@ std::vector<Vector3> LineLibrary::getEffPointsOfIntersection(std::vector<LineSeg
             auto nextIter = iter + 1;
             if(nextIter != sweepLine.end())
             {
-                checkIntersect(nextIter, iter,  pq);
+                checkIntersect(nextIter, iter,  pq, topValue.point_.x_);
             }
             //delete the segment from the segment map
             deleteFromSegmentList(topValue.lineId_, sweepLine);
         }
+		//cross over event
         if(topValue.event_ == Event::EventType::CROSS)
         {
-            std::cout<<"Reached8"<<std::endl;
             pointOfIntersections.push_back(topValue.point_);
 
             int firstLine = topValue.crossOver.first;
             int secondLine = topValue.crossOver.second;
+			int firstLineIndex = 0;
+			int secondLineIndex = 0;
             for(int i = 0 ; i < sweepLine.size(); i++)
             {
-
+				if (sweepLine[i].first == firstLine)  firstLineIndex = i;
+				if (sweepLine[i].first == secondLine)  secondLineIndex = i;
             }
+			swap(sweepLine[firstLineIndex], sweepLine[secondLineIndex]);
 
             //swap the crossOver in the sweep line
-
+			//check if the swapped neigbors have any further crossovers 
+			if(firstLineIndex > 0)
+				checkIntersect(sweepLine.begin() + firstLineIndex - 1, sweepLine.begin() + firstLineIndex, pq, topValue.point_.x_);
+			if (secondLineIndex < sweepLine.size() - 1)
+				checkIntersect(sweepLine.begin() + secondLineIndex + 1, sweepLine.begin() + secondLineIndex, pq, topValue.point_.x_);
         }
     }
 
