@@ -21,12 +21,6 @@ int main() {
 
 
     LineLibrary lineLib;
-    //This is an inefficient algorithm that goes in O(n2)
-    //this is to compare and test the algorithm
-    auto pointOfIntersections = lineLib.getPointsOfIntersection(lines);
-    std::for_each(pointOfIntersections.begin(), pointOfIntersections.end(), [](const Vector3& poi){
-       std::cout<<"x:"<<poi.x_<<"   y:"<<poi.y_<<"   z:"<<poi.z_<<std::endl;
-    });
 
     std::cout << "-----"<<std::endl;
     //This is an efficient algorithm that goes in O(nlogn)

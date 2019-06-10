@@ -46,8 +46,6 @@ public:
     bool isIntersecting(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2);
     float direction(Vector3 a, Vector3 b, Vector3 c);
     bool isColinear(Vector3 a, Vector3 b, Vector3 c);
-    //given a list of line segments return a list of point of intersections
-    std::vector<Vector3> getPointsOfIntersection(const std::vector<LineSegment>& lines);
 
     //Uses Line sweep algorithm
     std::vector<Vector3> getEfficientPointsOfIntersection(std::vector<LineSegment>& lines);

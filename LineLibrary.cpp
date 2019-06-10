@@ -51,28 +51,6 @@ bool LineLibrary::getPointOfIntersection(const LineSegment& l1, const LineSegmen
 }
 
 
-/*
-* O(n2) algorithm
-*/
-std::vector<Vector3> LineLibrary::getPointsOfIntersection(const std::vector<LineSegment>& lines)
-{
-    std::vector<Vector3> pointOfIntersections;
-    for(int i = 0 ; i < lines.size(); i++)
-    {
-        for(int j = i + 1; j < lines.size(); j++)
-        {
-            Vector3 pointOfIntersection(0.0f, 0.0f, 0.0f);
-            if(isIntersecting(lines[i].getStartPoint(), lines[i].getEndPoint(),
-                              lines[j].getStartPoint(), lines[j].getEndPoint()))
-            {
-                getPointOfIntersection(lines[i], lines[j], pointOfIntersection);
-                pointOfIntersections.push_back(pointOfIntersection);
-            }
-        }
-    }
-    return pointOfIntersections;
-}
-
 //check if they are co-linear
 bool LineLibrary::isColinear(Vector3 a, Vector3 b, Vector3 c)
 {
