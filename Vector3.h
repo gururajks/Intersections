@@ -8,12 +8,31 @@
 class Vector3
 {
 public:
-    Vector3() = delete;
+    //TODO: fix this
+    Vector3() {};
     Vector3(float x, float y, float z) : x_(x), y_(y), z_(z) {}
+
+    Vector3(Vector3& other)
+    {
+        x_ = other.x_;
+        y_ = other.y_;
+        z_ = other.z_;
+    }
+    Vector3(const Vector3& other)
+    {
+        x_ = other.x_;
+        y_ = other.y_;
+        z_ = other.z_;
+    }
 
     bool operator==(Vector3& other) const
     {
         return this->x_ == other.x_ && this->y_ == other.y_ && this->z_ == other.z_;
+    }
+
+    bool operator != (Vector3& other) const
+    {
+        return this->x_ != other.x_ || this->y_ != other.y_ || this->z_ != other.z_;
     }
 
     bool operator==(const Vector3& other) const
