@@ -7,6 +7,8 @@ Get Point of Intersections. Give a set of lines, it generates the list of point 
 _If you have a different CMake version and a different gcc (please make sure both of them are compatible with each other), 
 Edit CMakeLists.txt `cmake_minimum_required(VERSION 3.14)` to the version you have in your system_ 
 
+- Sweep Line Algorithm 
+https://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
 
 ### LINUX/OSX
 
